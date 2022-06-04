@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+  tomcat:
+    build:
+      context: ./config
+      dockerfile: Dockerfile
+    container_name: tomcat-compose
+    privileged: true
+    ports:
+      - "8085:8080"
+    restart: on-failure
+    depends_on:
+      - db
+    networks:
+      - an
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-compose
+    privileged: true
+    user: root
+    ports:
+      - "8083:8080"
+      - "50003:50000"
+    depends_on:
+      - tomcat
+    networks:
+      - an
+
+  db:
+    image: postgres
+    container_name: db-compose
+    ports:
+      - "5432:5432"
+    privileged: true
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: webapp
+      ALLOW_IP_RANGE: "0.0.0.0/0"
+    restart: always
+    networks:
+      - an
+
+networks:
+  an:
